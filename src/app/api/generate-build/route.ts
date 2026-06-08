@@ -39,20 +39,21 @@ export async function POST(request: NextRequest) {
     let buildResult: BuildResult
     try {
       buildResult = JSON.parse(rawResponse)
-    } catch {
-      console.error("Failed to parse AI response as JSON:", rawResponse)
-      return NextResponse.json(
-        { error: "AI returned invalid JSON. Please try again." },
-        { status: 500 }
-      )
-    }
 
-    if (!buildResult.parts || !Array.isArray(buildResult.parts) || buildResult.parts.length === 0) {
-      console.error("AI returned empty or invalid parts list:", buildResult)
-      return NextResponse.json(
-        { error: "AI generated an empty build. Please try again with more specific requirements." },
-        { status: 500 }
-      )
+      if (!buildResult || typeof buildResult !== "object" || Array.isArray(buildResult)) {
+        throw new Error("AI response is not a valid build object")
+      }
+      if (!buildResult.parts || !Array.isArray(buildResult.parts) || buildResult.parts.length === 0) {
+        throw new Error("AI returned an empty or invalid parts list")
+      }
+    } catch (parseError: any) {
+      console.error("=== AI RAW RESPONSE ===")
+      console.error(rawResponse)
+      console.error("=== PARSE ERROR ===", parseError)
+      const message = parseError.message === "AI response is not a valid build object" || parseError.message === "AI returned an empty or invalid parts list"
+        ? parseError.message
+        : "AI returned invalid JSON. Please try again."
+      return NextResponse.json({ error: message }, { status: 500 })
     }
 
     buildResult.parts = buildResult.parts.map(buildPCPartPickerUrls)

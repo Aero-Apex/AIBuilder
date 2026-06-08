@@ -13,6 +13,18 @@ interface BuildResultProps {
 }
 
 export function BuildResult({ build, onReset }: BuildResultProps) {
+  if (!build || !build.parts || !Array.isArray(build.parts)) {
+    return (
+      <div className="min-h-screen bg-surface-950 flex flex-col items-center justify-center px-6">
+        <div className="card-gradient rounded-2xl p-8 max-w-md text-center">
+          <h2 className="text-xl font-bold text-surface-100 mb-2">Invalid Build Data</h2>
+          <p className="text-sm text-surface-400 mb-4">The build data is malformed. Please try generating again.</p>
+          <Button variant="primary" onClick={onReset}>Start Over</Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col">
       <header className="border-b border-surface-800 px-6 py-4">
